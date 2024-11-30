@@ -33,7 +33,6 @@ async function run() {
     app.get('/users',async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result)
-
     })
     app.get('/users/:email', async (req, res) => {
       const email = req.params.email
@@ -64,6 +63,12 @@ async function run() {
       const result = await patientCollection.findOne(query);
       res.send(result);
     })
+    app.get('/allPatients/:email', async (req, res) => {
+      const email = req.params.email
+      const query = { email: email }
+      const result = await patientCollection.findOne(query)
+      res.send(result)
+    })
 
     // Post methods
     app.post('/allPatients', async (req, res) => {
@@ -91,6 +96,17 @@ async function run() {
       const result = await patientCollection.updateOne(filter, updateDoc, options);
       res.send(result);
     })
+    app.put('/allPatients/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const patient = req.body;
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: patient
+      };
+      const result = await patientCollection.updateOne(filter, updateDoc, options);
+      res.send(result);
+    });
 
     app.patch('/allPatients/:id', async (req, res) => {
       const { id } = req.params;
