@@ -30,7 +30,7 @@ async function run() {
     const patientCollection = client.db("PediatricOncology").collection("Patients");
     const usersCollection = client.db("PediatricOncology").collection("users");
     //users
-    app.get('/users',async (req, res) => {
+    app.get('/users', async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result)
     })
@@ -52,10 +52,21 @@ async function run() {
     })
     // Get methods
     app.get('/allPatients', async (req, res) => {
-      const cursor = patientCollection.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    })
+      const { email } = req.query; // Expecting email in query
+
+      if (!email) {
+        return res.status(400).send({ message: "User email is required" });
+      }
+
+      try {
+        const patients = await patientCollection.find({ addedBy: email }).toArray();
+        res.send(patients);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+        res.status(500).send({ message: "Internal server error" });
+      }
+    });
+
 
     app.get('/allPatients/:id', async (req, res) => {
       const id = req.params.id;
@@ -107,6 +118,22 @@ async function run() {
       const result = await patientCollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
+    app.get('/allPatients', async (req, res) => {
+      const { userEmail } = req.query;
+
+      if (!userEmail) {
+        return res.status(400).send({ message: "User email is required" });
+      }
+
+      try {
+        const patients = await patientCollection.find({ addedBy: userEmail }).toArray();
+        res.send(patients);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+        res.status(500).send({ message: "Internal server error" });
+      }
+    });
+
 
     app.patch('/allPatients/:id', async (req, res) => {
       const { id } = req.params;
